@@ -4,7 +4,7 @@ import (
     "bytes"
     "errors"
     "net"
-    "syscall"
+    // "syscall"
 
     // "github.com/caser789/ethernet"
     // "github.com/caser789/raw"
@@ -17,8 +17,10 @@ import (
 type Client struct {
     ifi *net.Interface
     ip net.IP
-    p *raw.PacketConn
+    p net.PacketConn
 }
+
+const protocolARP = 0x0806
 
 // NewClient creates a new Client using the specified network interface.
 // NewClient retrieves the IPv4 address of the interface and binds a raw socket
@@ -35,7 +37,7 @@ func NewClient(ifi *net.Interface) (*Client, error) {
     }
 
     // Open raw socket to send and receive ARP packets using ethernet frames
-    p, err := raw.ListenPacket(ifi, syscall.SOCK_RAW, syscall.ETH_P_ARP)
+    p, err := raw.ListenPacket(ifi, protocolARP, nil)
     if err != nil {
         return nil, err
     }
@@ -68,8 +70,8 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
     }
 
     eth := &ethernet.Frame{
-        DestinationMAC: ethernet.Broadcast,
-        SourceMAC: c.ifi.HardwareAddr,
+        Destination: ethernet.Broadcast,
+        Source: c.ifi.HardwareAddr,
         EtherType: ethernet.EtherTypeARP,
         Payload: arpb,
     }
