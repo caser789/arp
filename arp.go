@@ -19,8 +19,7 @@ var (
     // ErrInvalidIP is returned when one or more invalid IPv4 addresses are
     // passed to NewPacket.
     ErrInvalidIP = errors.New("invalid IPv4 address")
-
-
+)
 
 
 // An Operation is an ARP operation, such as request or reply.
@@ -164,7 +163,7 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
     p.HardwareType = binary.BigEndian.Uint16(b[0:2])
     p.ProtocolType = binary.BigEndian.Uint16(b[2:4])
 
-    p.MacLength = b[4]
+    p.MACLength = b[4]
     p.IPLength = b[5]
 
     p.Operation = Operation(binary.BigEndian.Uint16(b[6:8]))

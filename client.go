@@ -107,7 +107,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
     }
 }
 
-func firstIPv4Addr(addrs []netAddr) (net.IP, error) {
+func firstIPv4Addr(addrs []net.Addr) (net.IP, error) {
     for _, a := range addrs {
         if a.Network() != "ip+net" {
             continue
