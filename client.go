@@ -4,6 +4,8 @@ import (
     "bytes"
     "errors"
     "net"
+    "fmt"
+    "log"
     // "syscall"
 
     // "github.com/caser789/ethernet"
@@ -111,6 +113,8 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 
 func firstIPv4Addr(addrs []net.Addr) (net.IP, error) {
     for _, a := range addrs {
+        log.Println("Network")
+        log.Println(a.Network())
         if a.Network() != "ip+net" {
             continue
         }
