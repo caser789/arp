@@ -79,7 +79,7 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 	if len(srcMAC) < 6 {
 		return nil, ErrInvalidMAC
 	}
-	if len(dstMAC) < 6{
+	if len(dstMAC) < 6 {
 		return nil, ErrInvalidMAC
 	}
 	if len(srcMAC) != len(dstMAC) {
