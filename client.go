@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/caser789/ethernet"
 	"github.com/caser789/raw"
@@ -111,6 +112,22 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 			return arp.SenderMAC, nil
 		}
 	}
+}
+
+// SetDeadline sets the read and write deadlines associated with the
+// connection
+func (c *Client) SetDeadline(t time.Time) error {
+    return c.p.SetDeadline(t)
+}
+
+// SetReadDeadline sets the deadline for future raw socket read calls
+func (c *Client) SetReadDeadline(t time.Time) error {
+    return c.p.SetReadDeadline(t)
+}
+
+// SetWriteDeadline sets the deadline for future raw socket write calls
+func (c *Client) SetWriteDeadline(t time.Time) error {
+    return c.p.SetWriteDeadline(t)
 }
 
 // firstIPv4Addr attempts to retrieve the first detected IPv4 address from an
