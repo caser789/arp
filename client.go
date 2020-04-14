@@ -11,6 +11,12 @@ import (
 	"github.com/caser789/raw"
 )
 
+var (
+    // errNoIPv4Addr is returned when an interface does not have an IPv4
+    // address
+    errNoIPv4Addr = errors.New("no IPv4 address available for interface")
+)
+
 // A Client is an ARP client, which can be used to send ARP requests to
 // retrieve the MAC address of a machine using its IPv4 address.
 type Client struct {
@@ -149,5 +155,5 @@ func firstIPv4Addr(addrs []net.Addr) (net.IP, error) {
 		}
 	}
 
-	return nil, errors.New("no IPv4 address")
+	return nil, errNoIPv4Addr
 }

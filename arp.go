@@ -69,7 +69,7 @@ type Packet struct {
 // NewPacket creates a new Packet from an input Operation and MAC/IPv4 address
 // values for both a sender and target.
 //
-// If either MAC address is not 6 bytes or more in length, or there is a length
+// If either MAC address is less than 6 bytes in length, or there is a length
 // mismatch between the two, ErrInvalidMAC is returned
 //
 // If either IP address is not an IPv4 address, or there is a length mismatch
@@ -94,9 +94,6 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 	}
 	dstIP = dstIP.To4()
 	if dstIP == nil {
-		return nil, ErrInvalidIP
-	}
-	if len(srcIP) != len(dstIP) {
 		return nil, ErrInvalidIP
 	}
 
