@@ -3,6 +3,6 @@ module github.com/caser789/arp
 go 1.14
 
 require (
-	github.com/mdlayher/ethernet v0.0.0-20190606142754-0394541c37b7
-	github.com/mdlayher/raw v0.0.0-20191009151244-50f2db8cc065
+	github.com/caser789/ethernet v0.0.0-20200413151726-ff8a9b712e1f
+	github.com/caser789/raw v0.0.0-20200413104325-8609d7015f64
 )
