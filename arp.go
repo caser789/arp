@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"net"
 )
 
 //go:generate stringer --output=string.go -type=Operation
@@ -94,7 +95,7 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 		return nil, ErrInvalidIP
 	}
 	if len(srcIP) != len(dstIP) {
-		return nil, ErrINvalidIP
+		return nil, ErrInvalidIP
 	}
 
 	return &Packet{
@@ -168,7 +169,7 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 	p.MACLength = b[4]
 	p.IPLength = b[5]
 
-	p.Operation = Operateion(binary.BigEndian.Unint16(b[6:8]))
+	p.Operation = Operation(binary.BigEndian.Uint16(b[6:8]))
 
 	n := 8
 	ml := int(p.MACLength)

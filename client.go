@@ -15,7 +15,7 @@ import (
 type Client struct {
 	ifi *net.Interface
 	ip  net.IP
-	p   *raw.PacketConn
+	p   *raw.Conn
 }
 
 // NewClient creates a new Client using the specified network interface.
