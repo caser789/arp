@@ -12,9 +12,9 @@ import (
 )
 
 var (
-    // errNoIPv4Addr is returned when an interface does not have an IPv4
-    // address
-    errNoIPv4Addr = errors.New("no IPv4 address available for interface")
+	// errNoIPv4Addr is returned when an interface does not have an IPv4
+	// address
+	errNoIPv4Addr = errors.New("no IPv4 address available for interface")
 )
 
 // A Client is an ARP client, which can be used to send ARP requests to
@@ -123,17 +123,17 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 // SetDeadline sets the read and write deadlines associated with the
 // connection
 func (c *Client) SetDeadline(t time.Time) error {
-    return c.p.SetDeadline(t)
+	return c.p.SetDeadline(t)
 }
 
 // SetReadDeadline sets the deadline for future raw socket read calls
 func (c *Client) SetReadDeadline(t time.Time) error {
-    return c.p.SetReadDeadline(t)
+	return c.p.SetReadDeadline(t)
 }
 
 // SetWriteDeadline sets the deadline for future raw socket write calls
 func (c *Client) SetWriteDeadline(t time.Time) error {
-    return c.p.SetWriteDeadline(t)
+	return c.p.SetWriteDeadline(t)
 }
 
 // firstIPv4Addr attempts to retrieve the first detected IPv4 address from an
