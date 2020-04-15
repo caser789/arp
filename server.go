@@ -1,6 +1,7 @@
 package arp
 
 import (
+	"io"
 	"net"
 	"syscall"
 
@@ -57,6 +58,10 @@ func (s *Server) Serve(p net.PacketConn) error {
 	for {
 		n, addr, err := p.ReadFrom(buf)
 		if err != nil {
+            if err == io.EOF {
+                return nil
+            }
+
 			return err
 		}
 
