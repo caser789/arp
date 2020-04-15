@@ -3,73 +3,73 @@ package arp
 import (
 	"bytes"
 	"net"
-	"testing"
 	"reflect"
+	"testing"
 	"time"
 )
 
 func TestClientClose(t *testing.T) {
-    p := &closeCapturePacketConn{}
-    c := &Client{p: p}
+	p := &closeCapturePacketConn{}
+	c := &Client{p: p}
 
-    if err := c.Close(); err != nil {
-        t.Fatal(err)
-    }
+	if err := c.Close(); err != nil {
+		t.Fatal(err)
+	}
 
-    if !p.closed {
-        t.Fatal("client was not closed")
-    }
+	if !p.closed {
+		t.Fatal("client was not closed")
+	}
 }
 
 func TestClientSetDeadline(t *testing.T) {
-    p := &deadlineCapturePacketConn{}
-    c := &Client{p: p}
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
 
-    d := time.Now()
-    if err := c.SetDeadline(d); err != nil {
-        t.Fatal(err)
-    }
+	d := time.Now()
+	if err := c.SetDeadline(d); err != nil {
+		t.Fatal(err)
+	}
 
-    if want, got := d, p.r; want != got {
-        t.Fatalf("unexpected read deadline: %v != %v", want, got)
-    }
-    if want, got := d, p.w; want != got {
-        t.Fatalf("unexpected write deadline: %v != %v", want, got)
-    }
+	if want, got := d, p.r; want != got {
+		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+	}
+	if want, got := d, p.w; want != got {
+		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+	}
 }
 
 func TestClientSetReadDeadline(t *testing.T) {
-    p := &deadlineCapturePacketConn{}
-    c := &Client{p: p}
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
 
-    d := time.Now()
-    if err := c.SetReadDeadline(d); err != nil {
-        t.Fatal(err)
-    }
+	d := time.Now()
+	if err := c.SetReadDeadline(d); err != nil {
+		t.Fatal(err)
+	}
 
-    if want, got := d, p.r; want != got {
-        t.Fatalf("unexpected read deadline: %v != %v", want, got)
-    }
-    if want, got := (time.Time{}), p.w; want != got {
-        t.Fatalf("unexpected write deadline: %v != %v", want, got)
-    }
+	if want, got := d, p.r; want != got {
+		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+	}
+	if want, got := (time.Time{}), p.w; want != got {
+		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+	}
 }
 
 func TestClientSetWriteDeadline(t *testing.T) {
-    p := &deadlineCapturePacketConn{}
-    c := &Client{p: p}
+	p := &deadlineCapturePacketConn{}
+	c := &Client{p: p}
 
-    d := time.Now()
-    if err := c.SetWriteDeadline(d); err != nil {
-        t.Fatal(err)
-    }
+	d := time.Now()
+	if err := c.SetWriteDeadline(d); err != nil {
+		t.Fatal(err)
+	}
 
-    if want, got := (time.Time{}), p.r; want != got {
-        t.Fatalf("unexpected read deadline: %v != %v", want, got)
-    }
-    if want, got := d, p.w; want != got {
-        t.Fatalf("unexpected write deadline: %v != %v", want, got)
-    }
+	if want, got := (time.Time{}), p.r; want != got {
+		t.Fatalf("unexpected read deadline: %v != %v", want, got)
+	}
+	if want, got := d, p.w; want != got {
+		t.Fatalf("unexpected write deadline: %v != %v", want, got)
+	}
 }
 
 func Test_newClient(t *testing.T) {
@@ -230,39 +230,39 @@ func Test_firstIPv4Addr(t *testing.T) {
 // closeCapturePacketConn is a new.PacketConn which captures when
 // it is closed
 type closeCapturePacketConn struct {
-    closed bool
+	closed bool
 
-    noopPacketConn
+	noopPacketConn
 }
 
 func (p *closeCapturePacketConn) Close() error {
-    p.closed = true
-    return nil
+	p.closed = true
+	return nil
 }
 
 // deadlineCapturePacketConn is a net.PacketConn which captures read and
 // write deadlines
-type deadlineCapturePacketConn struct{
-    r time.Time
-    w time.Time
+type deadlineCapturePacketConn struct {
+	r time.Time
+	w time.Time
 
-    noopPacketConn
+	noopPacketConn
 }
 
 func (p *deadlineCapturePacketConn) SetDeadline(t time.Time) error {
-    p.r = t
-    p.w = t
-    return nil
+	p.r = t
+	p.w = t
+	return nil
 }
 
 func (p *deadlineCapturePacketConn) SetReadDeadline(t time.Time) error {
-    p.r = t
-    return nil
+	p.r = t
+	return nil
 }
 
 func (p *deadlineCapturePacketConn) SetWriteDeadline(t time.Time) error {
-    p.w = t
-    return nil
+	p.w = t
+	return nil
 }
 
 // noopPacketConn is a net.PacketConn which simply no-ops any input. It is
@@ -270,10 +270,10 @@ func (p *deadlineCapturePacketConn) SetWriteDeadline(t time.Time) error {
 // single method
 type noopPacketConn struct{}
 
-func (noopPacketConn) ReadFrom(b []byte) (int, net.Addr, error) {return 0, nil, nil}
-func (noopPacketConn) WriteTo(b []byte, addr net.Addr) (int, error) {return 0, nil}
-func (noopPacketConn) Close() error {return nil}
-func (noopPacketConn) LocalAddr() net.Addr {return nil}
-func (noopPacketConn) SetDeadline(t time.Time) error {return nil}
-func (noopPacketConn) SetReadDeadline(t time.Time) error {return nil}
-func (noopPacketConn) SetWriteDeadline(t time.Time) error {return nil}
+func (noopPacketConn) ReadFrom(b []byte) (int, net.Addr, error)     { return 0, nil, nil }
+func (noopPacketConn) WriteTo(b []byte, addr net.Addr) (int, error) { return 0, nil }
+func (noopPacketConn) Close() error                                 { return nil }
+func (noopPacketConn) LocalAddr() net.Addr                          { return nil }
+func (noopPacketConn) SetDeadline(t time.Time) error                { return nil }
+func (noopPacketConn) SetReadDeadline(t time.Time) error            { return nil }
+func (noopPacketConn) SetWriteDeadline(t time.Time) error           { return nil }

@@ -110,37 +110,37 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 			return nil, err
 		}
 
-        // Unmarshal ethernet frame and check:
-        //   - Frame is for our MAC address
-        //   - Frame has ARP EtherType
+		// Unmarshal ethernet frame and check:
+		//   - Frame is for our MAC address
+		//   - Frame has ARP EtherType
 		if err := eth.UnmarshalBinary(buf[:n]); err != nil {
 			return nil, err
 		}
-        if !bytes.Equal(eth.Destination, c.ifi.HardwareAddr) {
-            continue
-        }
-        if eth.EtherType != ethernet.EtherTypeARP {
-            continue
-        }
+		if !bytes.Equal(eth.Destination, c.ifi.HardwareAddr) {
+			continue
+		}
+		if eth.EtherType != ethernet.EtherTypeARP {
+			continue
+		}
 
-        // Unmarshal ARP packet and check
-        //    - Packet is a reply, not a request
-        //    - Packet is for our IP address
-        //    - Packet is for our MAC address
+		// Unmarshal ARP packet and check
+		//    - Packet is a reply, not a request
+		//    - Packet is for our IP address
+		//    - Packet is for our MAC address
 		if err := arp.UnmarshalBinary(eth.Payload); err != nil {
 			return nil, err
 		}
-        if arp.Operation != OperationReply {
-            continue
-        }
-        if !bytes.Equal(arp.TargetIP, c.ip) {
-            continue
-        }
+		if arp.Operation != OperationReply {
+			continue
+		}
+		if !bytes.Equal(arp.TargetIP, c.ip) {
+			continue
+		}
 		if !bytes.Equal(arp.TargetMAC, c.ifi.HardwareAddr) {
-            continue
-        }
+			continue
+		}
 
-        return arp.SenderMAC, nil
+		return arp.SenderMAC, nil
 	}
 }
 
