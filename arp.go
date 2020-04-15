@@ -13,7 +13,7 @@ import (
 //go:generate stringer --output=string.go -type=Operation
 
 var (
-	// ErrInvalidMac is returned when one or more invalid MAC addresses are
+	// ErrInvalidMAC is returned when one or more invalid MAC addresses are
 	// passed to NewPacket.
 	ErrInvalidMAC = errors.New("invalid MAC address")
 

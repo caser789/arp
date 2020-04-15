@@ -22,7 +22,7 @@ var (
 type Client struct {
 	ifi *net.Interface
 	ip  net.IP
-	p   *raw.Conn
+	p   net.PacketConn
 }
 
 // NewClient creates a new Client using the specified network interface.
@@ -47,7 +47,7 @@ func NewClient(ifi *net.Interface) (*Client, error) {
 // newClient is the internal, generic implementation of newClient. It is used
 // to allow an arbitrary net.PacketConn to be used in a client, so testing
 // is easier to accomplish
-func newClient(ifi *net.Interface, p *raw.Conn, addrs []net.Addr) (*Client, error) {
+func newClient(ifi *net.Interface, p net.PacketConn, addrs []net.Addr) (*Client, error) {
 	ip, err := firstIPv4Addr(addrs)
 	if err != nil {
 		return nil, err
