@@ -94,6 +94,10 @@ func (s *Server) newConn(p net.PacketConn, addr *raw.Addr, n int, buf []byte) *c
 func (c *conn) serve() {
 	r, err := parseRequest(c.buf)
 	if err != nil {
+        if err == errInvalidARPPacket {
+            return
+        }
+
 		return
 	}
 
