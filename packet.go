@@ -121,10 +121,14 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 	// 1 bytes: protocol length
 	// 2 bytes: operation
 	// N bytes: source hardware address
-	// 4 bytes: source protocol address
+	// N bytes: source protocol address
 	// N bytes: target hardware address
-	// 4 bytes: target protocol address
-	b := make([]byte, 2+2+1+1+2+4+4+(p.MACLength*2))
+	// N bytes: target protocol address
+
+    // Though an IPv4 address should always be 4 bytes, go-fuzz
+    // very quickly created several crasher scenarios which
+    // indicated that these values can lie
+	b := make([]byte, 2+2+1+1+2+(p.IPLength*2)+(p.MACLength*2))
 
 	binary.BigEndian.PutUint16(b[0:2], p.HardwareType)
 	binary.BigEndian.PutUint16(b[2:4], p.ProtocolType)
