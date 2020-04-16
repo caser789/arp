@@ -13,7 +13,7 @@ func TestClientRequestInvalidSourceMAC(t *testing.T) {
 		ifi: &net.Interface{},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := ErrInvalidMAC; want != got {
 		t.Fatalf("unexpected error for invalid source MAC:\n- want: %v\n- got: %v",
@@ -28,7 +28,7 @@ func TestClientRequestIPv6Address(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv6zero)
+	_, got := c.Resolve(net.IPv6zero)
 
 	if want := ErrInvalidIP; want != got {
 		t.Fatalf("unexpected error for IPv6 address:\n- want: %v\n- got: %v",
@@ -49,7 +49,7 @@ func TestClientRequestErrWriteTo(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := errWriteTo; want != got {
 		t.Fatalf("unexpected error during WriteTo:\n- want: %v\n- got: %v",
@@ -70,7 +70,7 @@ func TestClientRequestErrReadFrom(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := errReadFrom; want != got {
 		t.Fatalf("unexpected error during ReadFrom:\n- want: %v\n- got: %v",
@@ -89,7 +89,7 @@ func TestClientRequestEthernetFrameUnexpectedEOF(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame:\n- want: %v\n- got: %v",
@@ -112,7 +112,7 @@ func TestClientRequestEthernetFrameWrongDestination(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong destination MAC:\n- want: %v\n- got: %v",
@@ -135,7 +135,7 @@ func TestClientRequestEthernetFrameWrongEtherType(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ethernet frame with wrong EtyerType:\n- want: %v\n- got: %v",
@@ -161,7 +161,7 @@ func TestClientRequestARPPacketUnexpectedEOF(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.ErrUnexpectedEOF; want != got {
 		t.Fatalf("unexpected error wihle reading ARP packet:\n- want: %v\n- got: %v",
@@ -192,7 +192,7 @@ func TestClientRequestARPRequestInsteadOfResponse(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong operation type:\n- want: %v\n- got: %v",
@@ -224,7 +224,7 @@ func TestClientRequestARPResponseWrongTargetIP(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong target IP:\n- want: %v\n- got %v",
@@ -256,7 +256,7 @@ func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong target IP:\n- want: %v\n- got %v",
@@ -288,7 +288,7 @@ func TestClientRequestARPResponseWrongSenderIP(t *testing.T) {
 		},
 	}
 
-	_, got := c.Request(net.IPv4zero)
+	_, got := c.Resolve(net.IPv4zero)
 
 	if want := io.EOF; want != got {
 		t.Fatalf("unexpected error while reading ARP response with wrong sender IP:\n- want: %v\n- got: %v",
@@ -321,7 +321,7 @@ func TestClientRequestOK(t *testing.T) {
 	}
 
 	wantMAC := net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
-	gotMAC, err := c.Request(net.IPv4(192, 168, 1, 10))
+	gotMAC, err := c.Resolve(net.IPv4(192, 168, 1, 10))
 	if err != nil {
 		t.Fatal(err)
 	}

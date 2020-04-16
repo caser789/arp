@@ -17,7 +17,13 @@ var (
 	// ErrInvalidIP is returned when one or more invalid IPv4 addresses are
 	// passed to NewPacket
 	ErrInvalidIP = errors.New("invalid IPv4 address")
+
+    // errInvalidARPPacket is returned when an ethernet frame does not
+    // indicate that an ARP packet is contained in its payload
+    errInvalidARPPacket = errors.New("invalid ARP packet")
 )
+
+//go:generate stringer -output=string.go -type=Operation
 
 // An Operation is an ARP operation, such as request or reply.
 type Operation uint16
@@ -61,6 +67,12 @@ type Packet struct {
 
 	// TargetIP specifies the IPv4 address of the target of this Packet
 	TargetIP net.IP
+
+    // RemoteAddr specifies the actual remote address from which the
+    // ARP packet was received. It is extraced from the ehternet
+    // frame and is not actually part of the ARP packet. It will not
+    // appear in the binary form of the Packet.
+    RemoteAddr net.HardwareAddr
 }
 
 // NewPacket creates a new Packet from an input Operation and MAC/IPv4 address
@@ -200,4 +212,23 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 	p.TargetIP = bb[ml2+il : ml2+il2]
 
 	return nil
+}
+
+func parsePacket(buf []byte) (*Packet, *ethernet.Frame, error) {
+    f := new(ethernet.Frame)
+    if err := f.UnmarshalBinary(buf); err != nil {
+        return nil, nil, err
+    }
+
+    // Ignore frames do not have ARP EtherType
+    if f.EtherType != ethernet.EtherTypeARP {
+        return nil, nil, errInvalidARPPacket
+    }
+
+    p := new(Packet)
+    if err := p.UnmarshalBinary(f.Payload); err != nil {
+        return nil, nil, err
+    }
+
+    return p, f, nil
 }

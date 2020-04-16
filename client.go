@@ -16,8 +16,8 @@ var (
 	errNoIPv4Addr = errors.New("no IPv4 address available for interface")
 )
 
-// A Client is an ARP client, which can be used to send ARP requests to
-// retrieve the MAC address of a machine using its IPv4 address.
+// A Client is an ARP client, which can be used to send and receive 
+// ARP packets
 type Client struct {
 	ifi *net.Interface
 	ip  net.IP
@@ -65,86 +65,134 @@ func (c *Client) Close() error {
 	return c.p.Close()
 }
 
-// Request performs an ARP request, attempting to retrieve the MAC address
-// of a machine using its IPv4 address
-func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
+// Request sends an ARP request, asking for the hardware address
+// asoociated with an IPv4 address. The response, if any, can be read
+// with the Read method.
+//
+// Unlike Resolve, which provides an easier interface for getting the
+// hardware address, Request allows sending many requests in a row,
+// retrieving the responses afterwards.
+func (c *Client) Request(ip net.IP) error {
 	// Create ARP packet addressed to broadcast MAC to attempt to find the
 	// hardware address of the input IP address
 	arp, err := NewPacket(OperationRequest, c.ifi.HardwareAddr, c.ip, ethernet.Broadcast, ip)
 	if err != nil {
-		return nil, err
+        return err
 	}
+    return c.WriteTo(arp, ethernet.Broadcast)
+}
 
-	arpb, err := arp.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	// Create ethernet frame addressed to broadcast MAC to encapsulate the
-	// ARP packet
-	eth := &ethernet.Frame{
-		Destination: ethernet.Broadcast,
-		Source:      c.ifi.HardwareAddr,
-		EtherType:   ethernet.EtherTypeARP,
-		Payload:     arpb,
-	}
-	ethb, err := eth.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	// Write frame to ethernet broadcast address
-	_, err = c.p.WriteTo(ethb, &raw.Addr{
-		HardwareAddr: ethernet.Broadcast,
-	})
+// Resolve performs an ARP request, attempting to retrieve the
+// hardware address of a machine using its IPv4 address. Resolve must not
+// be used concurrently with Read. If you're using read (usually in a loop),
+// you need to use Request instead. Resolve may read more than
+// one message if it receives messages unrelated to the request.
+func (c *Client) Resolve(ip net.IP) (net.HardwareAddr, error) {
+    err := c.Request(ip)
 	if err != nil {
 		return nil, err
 	}
 
 	// Loop and wait for replies
-	buf := make([]byte, 128)
 	for {
-		n, _, err := c.p.ReadFrom(buf)
+        arp, eth, err := c.Read()
 		if err != nil {
 			return nil, err
 		}
 
-		// Unmarshal ethernet frame and check:
-		//   - Frame is for our MAC address
-		//   - Frame has ARP EtherType
-		if err := eth.UnmarshalBinary(buf[:n]); err != nil {
-			return nil, err
-		}
 		if !bytes.Equal(eth.Destination, c.ifi.HardwareAddr) {
 			continue
 		}
-		if eth.EtherType != ethernet.EtherTypeARP {
+		if !c.IsReplyFor(ip, arp) {
 			continue
 		}
 
-		// Unmarshal ARP packet and check
-		//    - Packet is a reply, not a request
-		//    - Packet is for our IP address
-		//    - Packet is for our MAC address
-		//    - Packet is a reply to our query, not another query
-		if err := arp.UnmarshalBinary(eth.Payload); err != nil {
-			return nil, err
-		}
-		if arp.Operation != OperationReply {
-			continue
-		}
-		if !arp.TargetIP.Equal(c.ip) {
-			continue
-		}
-		if !bytes.Equal(arp.TargetMAC, c.ifi.HardwareAddr) {
-			continue
-		}
-		if !ip.Equal(arp.SenderIP) {
-			continue
+        return arp.SenderMAC, nil
+    }
+}
+
+// IsReply reports whether the packet p is a response to one of our
+// queries. A packet is a response if it is addressed to our IP- and
+// hardware address.
+func (c *Client) IsReply(p *Packet) bool {
+    return p.Operation == OperationReply &&
+            p.TargetIP.Equal(c.ip) &&
+            bytes.Equal(p.TargetMAC, c.ifi.HardwareAddr)
+}
+
+// IsReplyFor reports whether the packet p is a response to our query
+// for IP. It works like IsReply, but additionally checks if the
+// response is for a specific IPv4 address ip
+func (c *Client) IsReplyFor(ip net.IP, p *Packet) bool {
+    return c.IsReply(p) && ip.Equal(p.SenderIP)
+}
+
+// Read reads a single ARP packet and returns it, together with its
+// ethernet frame
+func (c *Client) Read() (*Packet, *ethernet.Frame, error) {
+    buf := make([]byte, 128)
+    for {
+        n, addr, err := c.p.ReadFrom(buf)
+        if err != nil {
+            return nil, nil, err
+        }
+
+        p, eth, err := parsePacket(buf[:n])
+        if err != nil {
+            if err == errInvalidARPPacket {
+                continue
+            }
+
+            return nil, nil, err
 		}
 
-		return arp.SenderMAC, nil
-	}
+        if addr, ok := addr.(*raw.Addr); ok {
+            p.RemoteAddr = addr.HardwareAddr
+		}
+
+        return p, eth, nil
+    }
+}
+
+// WriteTo writes a single ARP packet to addr. Note that addr should,
+// but doesn't have to, match the target hardware address of the ARP
+// packet
+func (c *Client) WriteTo(p *Packet, addr net.HardwareAddr) error {
+    pb, err := p.MarshalBinary()
+    if err != nil {
+        return err
+    }
+
+    f := &ethernet.Frame{
+        Destination: p.TargetMAC,
+        Source: p.SenderMAC,
+        EtherType: ethernet.EtherTypeARP,
+        Payload: pb,
+    }
+
+    fb, err := f.MarshalBinary()
+    if err != nil {
+        return err
+    }
+
+    _, err = c.p.WriteTo(fb, &raw.Addr{HardwareAddr: addr})
+    return err
+}
+
+// Reply constructs and sends a reply to an ARP request. On the ARP
+// layer, it will be addressed to the sender address of the packet. On
+// the ethernet layer, it will be sent to the actual remote address
+// from which the request was received
+//
+// For more fine-grained control, use WriteTo to write a custom
+// response
+func (c *Client) Reply(req *Packet, hwAddr net.HardwareAddr, ip net.IP) error {
+    p, err := NewPacket(OperationReply, hwAddr, ip, req.SenderMAC, req.SenderIP)
+    if err != nil {
+        return err
+    }
+
+    return c.WriteTo(p, req.RemoteAddr)
 }
 
 // SetDeadline sets the read and write deadlines associated with the
