@@ -56,14 +56,14 @@ func main() {
 
 		// Ignore ARP requests which are not broadcast or bound directly for
 		// this machine
-		if !bytes.Equal(eth.Destination, ethernet.Broadcast) && !bytes.Equal(eth.Desitination, ifi.HardwareAddr) {
+		if !bytes.Equal(eth.Destination, ethernet.Broadcast) && !bytes.Equal(eth.Destination, ifi.HardwareAddr) {
 			continue
 		}
 
 		log.Printf("request: who-has %s? tell %s (%s)", pkt.TargetIP, pkt.SenderIP, pkt.SenderMAC)
 
 		// Ignore ARP requests which do not indicate the target IP
-        i!pkt.TargetIP.Equal(ip) {
+        if !pkt.TargetIP.Equal(ip) {
             continue
         }
 

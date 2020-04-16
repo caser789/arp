@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-    defer c.Close()
+	defer c.Close()
 
 	// Set request deadline from flag
 	if err := c.SetDeadline(time.Now().Add(*durFlag)); err != nil {

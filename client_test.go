@@ -72,15 +72,15 @@ func TestClientSetWriteDeadline(t *testing.T) {
 }
 
 func TestClientHardwareAddr(t *testing.T) {
-    c := &Client{
-        ifi: &net.Interface{
-            HardwareAddr: net.HardwareAddr{0, 1, 2, 3, 4, 5},
-        },
-    }
+	c := &Client{
+		ifi: &net.Interface{
+			HardwareAddr: net.HardwareAddr{0, 1, 2, 3, 4, 5},
+		},
+	}
 
-    if want, got := c.ifi.HardwareAddr.String(), c.HardwareAddr().String(); want != got {
-        t.Fatalf("unexpected hardware address: %v != %v", want, got)
-    }
+	if want, got := c.ifi.HardwareAddr.String(), c.HardwareAddr().String(); want != got {
+		t.Fatalf("unexpected hardware address: %v != %v", want, got)
+	}
 }
 
 func Test_newClient(t *testing.T) {
@@ -92,7 +92,7 @@ func Test_newClient(t *testing.T) {
 	}{
 		{
 			desc: "no network addresses",
-            c: &Client{},
+			c:    &Client{},
 		},
 		{
 			desc: "OK",

@@ -19,7 +19,7 @@ var (
 // Resolution Protocol, RFC 826).
 const protocolARP = 0x0806
 
-// A Client is an ARP client, which can be used to send and receive 
+// A Client is an ARP client, which can be used to send and receive
 // ARP packets
 type Client struct {
 	ifi *net.Interface
@@ -85,17 +85,17 @@ func (c *Client) Close() error {
 // hardware address, Request allows sending many requests in a row,
 // retrieving the responses afterwards.
 func (c *Client) Request(ip net.IP) error {
-    if c.ip == nil {
-        return errNoIPv4Addr
-    }
+	if c.ip == nil {
+		return errNoIPv4Addr
+	}
 
 	// Create ARP packet addressed to broadcast MAC to attempt to find the
 	// hardware address of the input IP address
 	arp, err := NewPacket(OperationRequest, c.ifi.HardwareAddr, c.ip, ethernet.Broadcast, ip)
 	if err != nil {
-        return err
+		return err
 	}
-    return c.WriteTo(arp, ethernet.Broadcast)
+	return c.WriteTo(arp, ethernet.Broadcast)
 }
 
 // Resolve performs an ARP request, attempting to retrieve the
@@ -104,72 +104,72 @@ func (c *Client) Request(ip net.IP) error {
 // you need to use Request instead. Resolve may read more than
 // one message if it receives messages unrelated to the request.
 func (c *Client) Resolve(ip net.IP) (net.HardwareAddr, error) {
-    err := c.Request(ip)
+	err := c.Request(ip)
 	if err != nil {
 		return nil, err
 	}
 
 	// Loop and wait for replies
 	for {
-        arp, _, err := c.Read()
+		arp, _, err := c.Read()
 		if err != nil {
 			return nil, err
 		}
 
-        if arp.Operation != OperationReply || !arp.SenderIP.Equal(ip) {
+		if arp.Operation != OperationReply || !arp.SenderIP.Equal(ip) {
 			continue
 		}
 
-        return arp.SenderMAC, nil
-    }
+		return arp.SenderMAC, nil
+	}
 }
 
 // Read reads a single ARP packet and returns it, together with its
 // ethernet frame
 func (c *Client) Read() (*Packet, *ethernet.Frame, error) {
-    buf := make([]byte, 128)
-    for {
-        n, _, err := c.p.ReadFrom(buf)
-        if err != nil {
-            return nil, nil, err
-        }
-
-        p, eth, err := parsePacket(buf[:n])
-        if err != nil {
-            if err == errInvalidARPPacket {
-                continue
-            }
-
-            return nil, nil, err
+	buf := make([]byte, 128)
+	for {
+		n, _, err := c.p.ReadFrom(buf)
+		if err != nil {
+			return nil, nil, err
 		}
 
-        return p, eth, nil
-    }
+		p, eth, err := parsePacket(buf[:n])
+		if err != nil {
+			if err == errInvalidARPPacket {
+				continue
+			}
+
+			return nil, nil, err
+		}
+
+		return p, eth, nil
+	}
 }
 
 // WriteTo writes a single ARP packet to addr. Note that addr should,
 // but doesn't have to, match the target hardware address of the ARP
 // packet
 func (c *Client) WriteTo(p *Packet, addr net.HardwareAddr) error {
-    pb, err := p.MarshalBinary()
-    if err != nil {
-        return err
-    }
+	pb, err := p.MarshalBinary()
+	if err != nil {
+		return err
+	}
 
-    f := &ethernet.Frame{
-        Destination: addr,
-        Source: p.SenderMAC,
-        EtherType: ethernet.EtherTypeARP,
-        Payload: pb,
-    }
+	f := &ethernet.Frame{
+		Destination: addr,
+		Source:      p.SenderMAC,
+		EtherType:   ethernet.EtherTypeARP,
+		Payload:     pb,
+	}
 
-    fb, err := f.MarshalBinary()
-    if err != nil {
-        return err
-    }
+	fb, err := f.MarshalBinary()
+	if err != nil {
+		return err
+	}
 
-    _, err = c.p.WriteTo(fb, &raw.Addr{HardwareAddr: addr})
-    return err
+	_, err = c.p.WriteTo(fb, &raw.Addr{HardwareAddr: addr})
+	return err
 }
 
 // Reply constructs and sends a reply to an ARP request. On the ARP
@@ -180,12 +180,12 @@ func (c *Client) WriteTo(p *Packet, addr net.HardwareAddr) error {
 // For more fine-grained control, use WriteTo to write a custom
 // response
 func (c *Client) Reply(req *Packet, hwAddr net.HardwareAddr, ip net.IP) error {
-    p, err := NewPacket(OperationReply, hwAddr, ip, req.SenderMAC, req.SenderIP)
-    if err != nil {
-        return err
-    }
+	p, err := NewPacket(OperationReply, hwAddr, ip, req.SenderMAC, req.SenderIP)
+	if err != nil {
+		return err
+	}
 
-    return c.WriteTo(p, req.SenderMAC)
+	return c.WriteTo(p, req.SenderMAC)
 }
 
 // SetDeadline sets the read and write deadlines associated with the
@@ -207,7 +207,7 @@ func (c *Client) SetWriteDeadline(t time.Time) error {
 // HardwareAddr fetches the hardware address for the interface associated
 // with the connection
 func (c Client) HardwareAddr() net.HardwareAddr {
-    return c.ifi.HardwareAddr
+	return c.ifi.HardwareAddr
 }
 
 // firstIPv4Addr attempts to retrieve the first detected IPv4 address from an

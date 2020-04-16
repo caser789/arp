@@ -9,19 +9,19 @@ import (
 )
 
 func TestClientRequestNoIPv4Address(t *testing.T) {
-    c := &Client{}
+	c := &Client{}
 
-    _, got := c.Resolve(net.IPv4zero)
-    if want := errNoIPv4Addr; want != got {
-        t.Fatalf("unexpected error for no IPv4 address:\n- want: %v\n- got: %v",
-            want, got)
-    }
+	_, got := c.Resolve(net.IPv4zero)
+	if want := errNoIPv4Addr; want != got {
+		t.Fatalf("unexpected error for no IPv4 address:\n- want: %v\n- got: %v",
+			want, got)
+	}
 }
 
 func TestClientRequestInvalidSourceMAC(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{},
-        ip: net.IPv4zero,
+		ip:  net.IPv4zero,
 	}
 
 	_, got := c.Resolve(net.IPv4zero)
@@ -37,7 +37,7 @@ func TestClientRequestIPv6Address(t *testing.T) {
 		ifi: &net.Interface{
 			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
 		},
-        ip: net.IPv4zero,
+		ip: net.IPv4zero,
 	}
 
 	_, got := c.Resolve(net.IPv6zero)

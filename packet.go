@@ -1,6 +1,7 @@
 package arp
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -18,9 +19,9 @@ var (
 	// passed to NewPacket
 	ErrInvalidIP = errors.New("invalid IPv4 address")
 
-    // errInvalidARPPacket is returned when an ethernet frame does not
-    // indicate that an ARP packet is contained in its payload
-    errInvalidARPPacket = errors.New("invalid ARP packet")
+	// errInvalidARPPacket is returned when an ethernet frame does not
+	// indicate that an ARP packet is contained in its payload
+	errInvalidARPPacket = errors.New("invalid ARP packet")
 )
 
 //go:generate stringer -output=string.go -type=Operation
@@ -85,7 +86,7 @@ func NewPacket(op Operation, srcMAC net.HardwareAddr, srcIP net.IP, dstMAC net.H
 	if len(dstMAC) < 6 {
 		return nil, ErrInvalidMAC
 	}
-	if len(srcMAC) != len(dstMAC) {
+	if !bytes.Equal(ethernet.Broadcast, dstMAC) && len(srcMAC) != len(dstMAC) {
 		return nil, ErrInvalidMAC
 	}
 
@@ -209,20 +210,20 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 }
 
 func parsePacket(buf []byte) (*Packet, *ethernet.Frame, error) {
-    f := new(ethernet.Frame)
-    if err := f.UnmarshalBinary(buf); err != nil {
-        return nil, nil, err
-    }
+	f := new(ethernet.Frame)
+	if err := f.UnmarshalBinary(buf); err != nil {
+		return nil, nil, err
+	}
 
-    // Ignore frames do not have ARP EtherType
-    if f.EtherType != ethernet.EtherTypeARP {
-        return nil, nil, errInvalidARPPacket
-    }
+	// Ignore frames do not have ARP EtherType
+	if f.EtherType != ethernet.EtherTypeARP {
+		return nil, nil, errInvalidARPPacket
+	}
 
-    p := new(Packet)
-    if err := p.UnmarshalBinary(f.Payload); err != nil {
-        return nil, nil, err
-    }
+	p := new(Packet)
+	if err := p.UnmarshalBinary(f.Payload); err != nil {
+		return nil, nil, err
+	}
 
-    return p, f, nil
+	return p, f, nil
 }
