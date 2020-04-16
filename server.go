@@ -113,7 +113,7 @@ func (c *conn) serve() {
 
 	handler := c.server.Handler
 	if handler == nil {
-		// handler = DefaultServeMux
+		handler = DefaultServeMux
 	}
 
 	handler.ServeARP(w, r)
