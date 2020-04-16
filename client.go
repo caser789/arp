@@ -33,6 +33,15 @@ func NewClient(ifi *net.Interface) (*Client, error) {
 		return nil, err
 	}
 
+	return NewClientPacketConn(ifi, p)
+}
+
+// NewClientPacketConn creates a new Client using the specified network interface
+// and net.Conn. This allows the caller to define exactly how they bind to the
+// net.Conn. This is most useful to define what protocol to pass to socket(7)
+//
+// In most cases, callers would be better off calling NewClient.
+func NewClientPacketConn(ifi *net.Interface, p net.PacketConn) (*Client, error) {
 	// Check for usable IPv4 addresses for the client
 	addrs, err := ifi.Addrs()
 	if err != nil {
