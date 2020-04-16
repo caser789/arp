@@ -8,9 +8,9 @@ import (
 )
 
 var (
-    // errInvalidARPPacket is returned when an ethernet frame does not
-    // indicate that an ARP packet is contained in its payload
-    errInvalidARPPacket = errors.New("invalid ARP packet")
+	// errInvalidARPPacket is returned when an ethernet frame does not
+	// indicate that an ARP packet is contained in its payload
+	errInvalidARPPacket = errors.New("invalid ARP packet")
 )
 
 // A Request is a processed ARP request received by a server. Its fields
@@ -46,10 +46,10 @@ func parseRequest(buf []byte) (*Request, error) {
 		return nil, err
 	}
 
-    // Ignore frames which do not have ARP EtherType
-    if f.EtherType != ethernet.EtherTypeARP {
-        return nil, errInvalidARPPacket
-    }
+	// Ignore frames which do not have ARP EtherType
+	if f.EtherType != ethernet.EtherTypeARP {
+		return nil, errInvalidARPPacket
+	}
 
 	return &Request{
 		Operation: p.Operation,

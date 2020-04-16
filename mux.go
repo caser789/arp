@@ -1,7 +1,7 @@
 package arp
 
 import (
-    "sync"
+	"sync"
 )
 
 // DefaultServeMux is the default ServeMux used by Serve. When the Handle and
@@ -14,15 +14,15 @@ var DefaultServeMux = NewServeMux()
 // for structuring your application, but may not be needed for very simple
 // ARP servers
 type ServeMux struct {
-    mu sync.RWMutex
-    m map[Operation]Handler
+	mu sync.RWMutex
+	m  map[Operation]Handler
 }
 
 // NewServeMux creates a new ServeMux which is ready to accept Handlers
 func NewServeMux() *ServeMux {
-    return &ServeMux{
-        m: make(map[Operation]Handler),
-    }
+	return &ServeMux{
+		m: make(map[Operation]Handler),
+	}
 }
 
 // ServeARP implements Handler for ServeMux, and serves an ARP request using
@@ -30,40 +30,40 @@ func NewServeMux() *ServeMux {
 // Operation does not match a valid Handler, ServeARP does not invoke any
 // handlers, ignoring a client's request
 func (mux *ServeMux) ServeARP(w ResponseSender, r *Request) {
-    mux.mu.RLock()
-    defer mux.mu.RUnlock()
-    h, ok := mux.m[r.Operation]
-    if ! ok {
-        return
-    }
+	mux.mu.RLock()
+	defer mux.mu.RUnlock()
+	h, ok := mux.m[r.Operation]
+	if !ok {
+		return
+	}
 
-    h.ServeARP(w, r)
+	h.ServeARP(w, r)
 }
 
 // Handle registers a Operation and Handler with a ServeMux, so that
 // future requests with that Operation will invoke the Handler
 func (mux *ServeMux) Handle(op Operation, handler Handler) {
-    mux.mu.Lock()
-    mux.m[op] = handler
-    mux.mu.Unlock()
+	mux.mu.Lock()
+	mux.m[op] = handler
+	mux.mu.Unlock()
 }
 
 // Handle registers an Operation and Handler with the DefaultServeMux,
 // so that future requests with that Operation will invoke the Handler
 func Handle(op Operation, handler Handler) {
-    DefaultServeMux.Handle(op, handler)
+	DefaultServeMux.Handle(op, handler)
 }
 
-// HandleFunc register an Operation and function as a HandlerFunc with a 
+// HandleFunc register an Operation and function as a HandlerFunc with a
 // ServeMux, so that future requests with that Operation will invoke the
 // HandlerFunc
 func (mux *ServeMux) HandleFunc(op Operation, handler func(ResponseSender, *Request)) {
-    mux.Handle(op, HandlerFunc(handler))
+	mux.Handle(op, HandlerFunc(handler))
 }
 
 // HandleFunc registers an Operation and function as a HandlerFunc with the
 // DefaultServeMux, so that future requests with that Operation will invoke
 // the HandlerFunc
 func HandleFunc(op Operation, handler func(ResponseSender, *Request)) {
-    DefaultServeMux.HandleFunc(op, handler)
+	DefaultServeMux.HandleFunc(op, handler)
 }

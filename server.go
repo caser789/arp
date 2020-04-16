@@ -58,9 +58,9 @@ func (s *Server) Serve(p net.PacketConn) error {
 	for {
 		n, addr, err := p.ReadFrom(buf)
 		if err != nil {
-            if err == io.EOF {
-                return nil
-            }
+			if err == io.EOF {
+				return nil
+			}
 
 			return err
 		}
@@ -99,9 +99,9 @@ func (s *Server) newConn(p net.PacketConn, addr *raw.Addr, n int, buf []byte) *c
 func (c *conn) serve() {
 	r, err := parseRequest(c.buf)
 	if err != nil {
-        if err == errInvalidARPPacket {
-            return
-        }
+		if err == errInvalidARPPacket {
+			return
+		}
 
 		return
 	}
