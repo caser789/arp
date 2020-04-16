@@ -173,30 +173,31 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 
 	n := 8
 	ml := int(p.MACLength)
+    ml2 := ml * 2
 	il := int(p.IPLength)
+    il2 := il * 2
 
-	if len(b) < 8+(2*ml)+(2*il) {
+    addrl := n + ml2 + il2
+	if len(b) < addrl {
 		return io.ErrUnexpectedEOF
 	}
 
-	sha := make(net.HardwareAddr, ml)
-	copy(sha, b[n:n+ml])
-	p.SenderMAC = sha
+    bb := make([]byte, addrl-n)
+
+    copy(bb[0:ml], b[n:n+ml])
+    p.SenderMAC = bb[0:ml]
 	n += ml
 
-	spa := make(net.IP, il)
-	copy(spa, b[n:n+il])
-	p.SenderIP = spa
+    copy(bb[ml:ml+il], b[n:n+il])
+    p.SenderIP = bb[ml:ml+il]
 	n += il
 
-	tha := make(net.HardwareAddr, ml)
-	copy(tha, b[n:n+ml])
-	p.TargetMAC = tha
+    copy(bb[ml+il:ml2+il], b[n:n+ml])
+    p.TargetMAC = bb[ml+il:ml2+il]
 	n += ml
 
-	tpa := make(net.IP, il)
-	copy(tpa, b[n:n+il])
-	p.TargetIP = tpa
+    copy(bb[ml2+il:ml2+il2], b[n:n+il])
+	p.TargetIP = bb[ml2+il:ml2+il2]
 
 	return nil
 }
