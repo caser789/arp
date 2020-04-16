@@ -126,6 +126,7 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		//    - Packet is a reply, not a request
 		//    - Packet is for our IP address
 		//    - Packet is for our MAC address
+		//    - Packet is a reply to our query, not another query
 		if err := arp.UnmarshalBinary(eth.Payload); err != nil {
 			return nil, err
 		}
@@ -138,6 +139,9 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		if !bytes.Equal(arp.TargetMAC, c.ifi.HardwareAddr) {
 			continue
 		}
+        if !ip.Equal(arp.SenderIP) {
+            continue
+        }
 
 		return arp.SenderMAC, nil
 	}
