@@ -200,70 +200,6 @@ func TestClientRequestARPRequestInsteadOfResponse(t *testing.T) {
 	}
 }
 
-func TestClientRequestARPResponseWrongTargetIP(t *testing.T) {
-	c := &Client{
-		ifi: &net.Interface{
-			HardwareAddr: net.HardwareAddr{0, 0, 0, 0, 0, 0},
-		},
-		ip: net.IPv4(192, 168, 1, 1).To4(),
-		p: &bufferReadFromPacketConn{
-			b: bytes.NewBuffer(append([]byte{
-				0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0,
-				0x08, 0x06,
-				0, 1,
-				0x08, 0x06,
-				6,
-				4,
-				0, 2,
-				0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0,
-				192, 168, 1, 2,
-			}, make([]byte, 46)...)),
-		},
-	}
-
-	_, got := c.Resolve(net.IPv4zero)
-
-	if want := io.EOF; want != got {
-		t.Fatalf("unexpected error while reading ARP response with wrong target IP:\n- want: %v\n- got %v",
-			want, got)
-	}
-}
-
-func TestClientRequestARPResponseWrongTargetMAC(t *testing.T) {
-	c := &Client{
-		ifi: &net.Interface{
-			HardwareAddr: net.HardwareAddr{0xde, 0xad, 0xbe, 0xef, 0xde, 0xad},
-		},
-		ip: net.IPv4(192, 168, 1, 1).To4(),
-		p: &bufferReadFromPacketConn{
-			b: bytes.NewBuffer(append([]byte{
-				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
-				0, 0, 0, 0, 0, 0,
-				0x08, 0x06,
-				0, 1,
-				0x08, 0x06,
-				6,
-				4,
-				0, 2,
-				0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0,
-				0xaa, 0xad, 0xbe, 0xef, 0xde, 0xad,
-				192, 168, 1, 1,
-			}, make([]byte, 46)...)),
-		},
-	}
-
-	_, got := c.Resolve(net.IPv4zero)
-
-	if want := io.EOF; want != got {
-		t.Fatalf("unexpected error while reading ARP response with wrong target IP:\n- want: %v\n- got %v",
-			want, got)
-	}
-}
-
 func TestClientRequestARPResponseWrongSenderIP(t *testing.T) {
 	c := &Client{
 		ifi: &net.Interface{
@@ -314,8 +250,8 @@ func TestClientRequestOK(t *testing.T) {
 				0, 2,
 				0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff,
 				192, 168, 1, 10,
-				0xde, 0xad, 0xbe, 0xef, 0xde, 0xad,
-				192, 168, 1, 1,
+				0xdd, 0xad, 0xbe, 0xef, 0xde, 0xad,
+				192, 168, 1, 2,
 			}, make([]byte, 40)...)),
 		},
 	}
