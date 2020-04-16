@@ -16,14 +16,15 @@ type Server struct {
 	Iface *net.Interface
 
 	// Handler is the handler to use while serving ARP requests. If this
-	// value is nil, DefaultServeMux will be used in place of Handler
+	// value is nil, the server will panic
 	Handler Handler
 }
 
 // ListenAndServe listens for ARP requests using a raw ethernet socket on
 // the specified interface, using the default Server configuration and
-// specified handler to handle ARP requests. If the handler is nil,
-// DefaultServeMux is used instead
+// specified handler to handle ARP requests
+//
+// If the handler is nil, the server will panic
 func ListenAndServe(iface string, handler Handler) error {
 	ifi, err := net.InterfaceByName(iface)
 	if err != nil {
@@ -110,12 +111,7 @@ func (c *conn) serve() {
 		remoteAddr: c.remoteAddr,
 	}
 
-	handler := c.server.Handler
-	if handler == nil {
-		handler = DefaultServeMux
-	}
-
-	handler.ServeARP(w, r)
+	c.server.Handler.ServeARP(w, r)
 }
 
 // response represents an ARP response, and implements ResponseSender so that

@@ -33,7 +33,7 @@ func main() {
 
 	// Handle ARP requests bound for designated IPv4 address, using proxy ARP
 	// to indicate that the address belongs to this machine
-	arp.HandleFunc(arp.OperationRequest, func(w arp.ResponseSender, r *arp.Request) {
+	proxyARP := func(w arp.ResponseSender, r *arp.Request) {
 		// Ignore ARP requests which are not broadcast or bound directly for
 		// this machine
 		if !bytes.Equal(r.TargetMAC, ethernet.Broadcast) && !bytes.Equal(r.TargetMAC, ifi.HardwareAddr) {
@@ -43,7 +43,7 @@ func main() {
 		log.Printf("request: who-has %s? tell %s (%s)", r.TargetIP, r.SenderIP, r.SenderMAC)
 
 		// Ignore ARP requests which do not indicate the target IP
-		if !bytes.Equal(r.TargetIP, ip) {
+		if !r.TargetIP.Equal(ip) {
 			return
 		}
 
@@ -64,9 +64,9 @@ func main() {
 		if _, err := w.Send(p); err != nil {
 			log.Fatal(err)
 		}
-	})
+	}
 
-	if err := arp.ListenAndServe(*ifaceFlag, nil); err != nil {
+	if err := arp.ListenAndServe(*ifaceFlag, arp.HandlerFunc(proxyARP)); err != nil {
 		log.Fatal(err)
 	}
 }

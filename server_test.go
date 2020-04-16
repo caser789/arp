@@ -65,7 +65,7 @@ func TestServeNoResponse(t *testing.T) {
 			t.Fatalf("expected request sender MAC:\n- want: %v\n- got: %v", want, got)
 		}
 
-		if want, got := (net.IP{192, 168, 1, 10}), r.SenderIP; !bytes.Equal(want, got) {
+		if want, got := (net.IP{192, 168, 1, 10}), r.SenderIP; !want.Equal(got) {
 			t.Fatalf("expected request sender IP:\n- want: %v\n- got: %v", want, got)
 		}
 
@@ -73,7 +73,7 @@ func TestServeNoResponse(t *testing.T) {
 			t.Fatalf("expected request target MAC:\n- want: %v\n- got: %v", want, got)
 		}
 
-		if want, got := (net.IP{192, 168, 1, 1}), r.TargetIP; !bytes.Equal(want, got) {
+		if want, got := (net.IP{192, 168, 1, 1}), r.TargetIP; !want.Equal(got) {
 			t.Fatalf("expected request target IP:\n- want: %v\n- got: %v", want, got)
 		}
 	})
@@ -179,7 +179,7 @@ func TestServeOK(t *testing.T) {
 		t.Fatalf("unexpected ARP packet sender MAC:\n- want: %v\n- got: %v",
 			want, got)
 	}
-	if want, got := wantsIP, pkt.SenderIP; !bytes.Equal(want, got) {
+	if want, got := wantsIP, pkt.SenderIP; !want.Equal(got) {
 		t.Fatalf("unexpected ARP packet sender IP:\n- want: %v\n- got: %v",
 			want, got)
 	}
@@ -187,7 +187,7 @@ func TestServeOK(t *testing.T) {
 		t.Fatalf("unexpected ARP packet target MAC:\n- want: %v\n- got: %v",
 			want, got)
 	}
-	if want, got := wanttIP, pkt.TargetIP; !bytes.Equal(want, got) {
+	if want, got := wanttIP, pkt.TargetIP; !want.Equal(got) {
 		t.Fatalf("unexpected ARP packet target IP:\n- want: %v\n- got: %v",
 			want, got)
 	}

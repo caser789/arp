@@ -139,9 +139,9 @@ func (c *Client) Request(ip net.IP) (net.HardwareAddr, error) {
 		if !bytes.Equal(arp.TargetMAC, c.ifi.HardwareAddr) {
 			continue
 		}
-        if !ip.Equal(arp.SenderIP) {
-            continue
-        }
+		if !ip.Equal(arp.SenderIP) {
+			continue
+		}
 
 		return arp.SenderMAC, nil
 	}

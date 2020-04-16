@@ -125,9 +125,9 @@ func (p *Packet) MarshalBinary() ([]byte, error) {
 	// N bytes: target hardware address
 	// N bytes: target protocol address
 
-    // Though an IPv4 address should always be 4 bytes, go-fuzz
-    // very quickly created several crasher scenarios which
-    // indicated that these values can lie
+	// Though an IPv4 address should always be 4 bytes, go-fuzz
+	// very quickly created several crasher scenarios which
+	// indicated that these values can lie
 	b := make([]byte, 2+2+1+1+2+(p.IPLength*2)+(p.MACLength*2))
 
 	binary.BigEndian.PutUint16(b[0:2], p.HardwareType)
@@ -173,31 +173,31 @@ func (p *Packet) UnmarshalBinary(b []byte) error {
 
 	n := 8
 	ml := int(p.MACLength)
-    ml2 := ml * 2
+	ml2 := ml * 2
 	il := int(p.IPLength)
-    il2 := il * 2
+	il2 := il * 2
 
-    addrl := n + ml2 + il2
+	addrl := n + ml2 + il2
 	if len(b) < addrl {
 		return io.ErrUnexpectedEOF
 	}
 
-    bb := make([]byte, addrl-n)
+	bb := make([]byte, addrl-n)
 
-    copy(bb[0:ml], b[n:n+ml])
-    p.SenderMAC = bb[0:ml]
+	copy(bb[0:ml], b[n:n+ml])
+	p.SenderMAC = bb[0:ml]
 	n += ml
 
-    copy(bb[ml:ml+il], b[n:n+il])
-    p.SenderIP = bb[ml:ml+il]
+	copy(bb[ml:ml+il], b[n:n+il])
+	p.SenderIP = bb[ml : ml+il]
 	n += il
 
-    copy(bb[ml+il:ml2+il], b[n:n+ml])
-    p.TargetMAC = bb[ml+il:ml2+il]
+	copy(bb[ml+il:ml2+il], b[n:n+ml])
+	p.TargetMAC = bb[ml+il : ml2+il]
 	n += ml
 
-    copy(bb[ml2+il:ml2+il2], b[n:n+il])
-	p.TargetIP = bb[ml2+il:ml2+il2]
+	copy(bb[ml2+il:ml2+il2], b[n:n+il])
+	p.TargetIP = bb[ml2+il : ml2+il2]
 
 	return nil
 }
